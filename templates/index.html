@@ -1,10 +1,11 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Hello World</title>
-</head>
-<body>
-<h1>Hello WOrld!</h1>
-</body>
-</html>
+{% extends "base.html" %}
+
+{% block title %}Hello World{% endblock %}
+
+{% block page_content %}
+    <h1>Hello WOrld!</h1>
+    <p>The UTC time is {{ current_time }}</p>
+    <p>The local date and time is {{ moment(current_time).format('LLL') }}</p>
+    <p>That was {{ moment(current_time).fromNow(refresh=True) }}</p>
+
+{% endblock %}
