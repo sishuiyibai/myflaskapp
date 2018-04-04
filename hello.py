@@ -7,6 +7,7 @@ from wtforms import StringField, SubmitField
 from wtforms.validators import DataRequired
 from flask_sqlalchemy import SQLAlchemy
 import os
+from flask_script import Manager,Shell
 
 
 app = Flask(__name__)
@@ -17,10 +18,13 @@ basedir = os.path.abspath(os.path.dirname(__file__))
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(basedir, 'data.sqlite')
 app.config['SQLALCHEMY_COMMIT_ON_TEARDOWN'] = True
 
-
+#  bootstrap扩展框架实例
 bootstrap = Bootstrap(app)
 moment = Moment(app)
+#  数据库引擎管理实例
 db = SQLAlchemy(app)
+#  向Flask插入外部脚本的Manager实例
+manager = Manager(app)
 
 
 # 设置CSRF保护密钥
@@ -85,6 +89,14 @@ def page_not_found(e):
     return render_template('500.html'), 500
 
 
+# shell命令添加上下文
+def make_shell_context():
+    return dict(app=app, db=db, User=User, Role=Role)
+
+
+manager.add_command("shell", Shell(make_context=make_shell_context))
+
+
 # user.html视图处理函数
 @app.route('/user/<name>')
 def user(name):
@@ -92,4 +104,5 @@ def user(name):
 
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    #  app.run(debug=True)
+    manager.run()
