@@ -7,7 +7,6 @@ from wtforms import StringField, SubmitField
 from wtforms.validators import DataRequired
 from flask_sqlalchemy import SQLAlchemy
 import os
-from flask_script import Manager,Shell
 
 
 app = Flask(__name__)
@@ -23,8 +22,6 @@ bootstrap = Bootstrap(app)
 moment = Moment(app)
 #  数据库引擎管理实例
 db = SQLAlchemy(app)
-#  向Flask插入外部脚本的Manager实例
-manager = Manager(app)
 
 
 # 设置CSRF保护密钥
@@ -90,11 +87,9 @@ def page_not_found(e):
 
 
 # shell命令添加上下文
+@app.shell_context_processor
 def make_shell_context():
     return dict(app=app, db=db, User=User, Role=Role)
-
-
-manager.add_command("shell", Shell(make_context=make_shell_context))
 
 
 # user.html视图处理函数
@@ -103,6 +98,5 @@ def user(name):
     return render_template('user.html', name=name)
 
 
-if __name__ == '__main__':
-    #  app.run(debug=True)
-    manager.run()
+# if __name__ == '__main__':
+    # app.run(debug=True)
