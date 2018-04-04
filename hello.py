@@ -39,7 +39,7 @@ class Role(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(64), unique=True)
     #  向User模型添加一个Role属性 ，该属性获取的是Role模型对象，可通过该属性访问Role模型
-    users = db.relationship('User', backref='role')
+    users = db.relationship('User', backref='role', lazy='dynamic')
 
     def __repr__(self):
         return '<Role %r>' % self.__name__
@@ -60,12 +60,17 @@ class User(db.Model):
 def index():
     form = NameForm()
     if form.validate_on_submit():
-        old_name = session.get('name')
-        if old_name is not None and old_name != form.name.data:
-            flash('Looks like you have changed your name!')
+        user = User.query.filter_by(username=form.name.data).first()
+        if user is None:
+            user = User(username=form.name.data)
+            db.session.add(user)
+            session['known'] = False
+        else:
+            session['known'] = True
         session['name'] = form.name.data
+        form.name.data = ''
         return redirect(url_for('index'))
-    return render_template('index.html', form=form, name=session.get('name'))
+    return render_template('index.html', form=form, name=session.get('name'), known=session.get('known', False))
 
 
 # 404响应处理函数
