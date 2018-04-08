@@ -8,6 +8,7 @@ from wtforms.validators import DataRequired
 from flask_sqlalchemy import SQLAlchemy
 import os
 from flask_script import Manager, Shell
+from flask_migrate import Migrate, MigrateCommand
 
 
 app = Flask(__name__)
@@ -25,6 +26,9 @@ moment = Moment(app)
 db = SQLAlchemy(app)
 #  向Flask插入外部脚本的Manager实例
 manager = Manager(app)
+#  配置Flask-Migrate
+migrate = Migrate(app, db)
+manager.add_command('db', MigrateCommand)
 
 
 # 设置CSRF保护密钥
