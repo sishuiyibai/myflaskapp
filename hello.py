@@ -10,6 +10,7 @@ import os
 from flask_script import Manager, Shell
 from flask_migrate import Migrate, MigrateCommand
 from flask_mail import Mail, Message
+from threading import Thread
 
 
 app = Flask(__name__)
@@ -79,12 +80,21 @@ class User(db.Model):
     def __repr__(self):
         return '<User %r>' % self.username
 
+
+# 定义send_async_email
+def send_async_email(app, msg):
+    with app.app_context():
+        mail.send(msg)
+
+
 #  定义send_mail
-def send_email(to,subject,template,**kwargs):
-    msg = Message(app.config['FLASKY_MAIL_SUBJECT_PREFIX']+subject,sender=app.config['FLASKY_MAIL_SENDER'],recipients=[to])
-    msg.body = render_template(template + '.txt',**kwargs)
-    msg.html = render_template(template + '.html',**kwargs)
-    mail.send(msg)
+def send_email(to, subject, template, **kwargs):
+    msg = Message(app.config['FLASKY_MAIL_SUBJECT_PREFIX']+subject, sender=app.config['FLASKY_MAIL_SENDER'], recipients=[to])
+    msg.body = render_template(template + '.txt', **kwargs)
+    msg.html = render_template(template + '.html', **kwargs)
+    thr = Thread(target=send_async_email, args=[app, msg])
+    thr.start()
+    return thr
 
 
 # index.html视图处理函数
