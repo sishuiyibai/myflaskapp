@@ -21,6 +21,7 @@ class Config:
     FLASK_ADMIN = os.environ.get('FLASKY_ADMIN')
     #  数据库配置
     SQLALCHEMY_COMMIT_ON_TEARDOWN = True
+    SQLALCHEMY_TRACK_MODIFICATIONS = False
 
     @staticmethod
     def init_app(app):
@@ -31,13 +32,13 @@ class DevelopmentConfig(Config):
     DEBUG = True
     #  数据库配置
     SQLALCHEMY_DATABASE_URI = os.environ.get('DEV_DATABASE_URL') or \
-                              'sqlite:///' + os.path.join(basedir,'data-dev.sqlite')
+                              'sqlite:///' + os.path.join(basedir, 'data-dev.sqlite')
 
 
 class TestingConfig(Config):
     TESTING = True
     SQLALCHEMY_DATABASE_URI = os.environ.get('TEST_DATABASE_URL') or \
-                              'sqlite:///' + os.path.join(basedir, 'data-test.sqlite')
+                              'sqlite://'
 
 
 class ProductionConfig(Config):
