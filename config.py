@@ -29,7 +29,8 @@ class Config:
     FLASKY_MAIL_SENDER = 'sishuiyibai@163.com'
     FLASKY_ADMIN = os.environ.get('FLASKY_ADMIN')
     #  数据库配置
-    SQLALCHEMY_COMMIT_ON_TEARDOWN = True
+    # flask-sqlalchemy 2.0 版本以上被移除
+    #SQLALCHEMY_COMMIT_ON_TEARDOWN = True
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
     @staticmethod
