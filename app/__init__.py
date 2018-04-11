@@ -19,7 +19,9 @@ moment = Moment()
 db = SQLAlchemy()
 
 login_manager = LoginManager()
+# 启用会话保护[None,Basic,Strong]
 login_manager.session_protection = 'strong'
+# 设置登陆视图，用于未授权操作的跳转：
 login_manager.login_view = 'auth.login'
 
 
