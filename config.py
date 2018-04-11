@@ -19,7 +19,7 @@ class Config:
     MAIL_USE_TLS = os.environ.get('MAIL_USE_TLS', 'True').lower() in ['true', 'on', '1']
     # MAIL_USE_TLS = os.environ.get('MAIL_USE_TLS', 'False')
     # 启用安全套接层协议
-    MAIL_USE_SSL = os.environ.get('MAIL_USE_SSL', 'False')
+    # MAIL_USE_SSL = os.environ.get('MAIL_USE_SSL', 'False')
     # 邮件账户的用户名
     MAIL_USERNAME = os.environ.get('MAIL_USERNAME', 'None')
     # 邮件账户的密码
@@ -27,7 +27,7 @@ class Config:
     #  flask-mail主题前缀/发邮件人等配置
     FLASKY_MAIL_SUBJECT_PREFIX = '[Flasky]'
     FLASKY_MAIL_SENDER = 'sishuiyibai@163.com'
-    FLASK_ADMIN = os.environ.get('FLASKY_ADMIN')
+    FLASKY_ADMIN = os.environ.get('FLASKY_ADMIN')
     #  数据库配置
     SQLALCHEMY_COMMIT_ON_TEARDOWN = True
     SQLALCHEMY_TRACK_MODIFICATIONS = False
