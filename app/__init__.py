@@ -23,8 +23,6 @@ login_manager.session_protection = 'strong'
 login_manager.login_view = 'auth.login'
 
 
-
-
 # 工厂函数
 def create_app(config_name):
     app = Flask(__name__)
@@ -37,7 +35,7 @@ def create_app(config_name):
     db.init_app(app)
     login_manager.init_app(app)
 
-    # 注册main蓝本
+    # 注册main蓝本,main蓝本在./main文件夹下的__init__py文件中创建
     from .main import main as main_blueprint
     app.register_blueprint(main_blueprint)
 
