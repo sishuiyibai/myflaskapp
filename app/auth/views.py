@@ -3,7 +3,7 @@ from flask_login import login_user, logout_user, login_required, current_user
 from . import auth
 from ..models import User
 from .. import db
-from .forms import LoginForm, RegistrationForm
+from .forms import LoginForm, RegistrationForm, ChangePasswordForm
 from ..email import send_email
 
 
@@ -65,7 +65,7 @@ def confirm(token):
     return redirect(url_for('main.index'))
 
 
-# 处理未确认用户账户
+# 处理未确认用户账户页面跳转
 @auth.before_app_request
 def before_request():
     if current_user.is_authenticated \
@@ -92,6 +92,23 @@ def resend_confirmation():
     # 当重新发送账户确认邮件之后，由于当前用户账户仍然没有确认，所以页面跳转被before_app_request（）限制在auth/unconfirmed.html下，
     # 不会跳转至main/index.html,只有用户打开邮件链接，验证通过后，才会跳转至主页面
     return redirect(url_for('main.index'))
+
+
+# 用户修改密码
+@auth.route('/change_password', methods=['GET', 'POST'])
+@login_required
+def change_password():
+    form = ChangePasswordForm()
+    if form.validate_on_submit():
+        if current_user.verify_password(form.old_password.data):
+            current_user.password = form.password.data
+            db.session.add(current_user)
+            db.session.commit()
+            flash('Your password has been updated.')
+            return redirect(url_for('main.index'))
+        else:
+            flash('Invalid password.')
+    return render_template('auth/change_password.html', form=form)
 
 
 
