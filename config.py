@@ -8,16 +8,25 @@ class Config:
     # 设置CSRF保护密钥
     SECRET_KEY = os.environ.get('SECRET_KEY') or 'hard to guess string'
     #  配置邮件服务器
-    MAIL_SERVER = os.environ.get('MAIL_SERVER', 'smtp.googlemail.com')
+    MAIL_SERVER = os.environ.get('MAIL_SERVER', 'smtp.163.com')
+    # 默认本地服务器，无需验证
+    # MAIL_SERVER = os.environ.get('MAIL_SERVER', 'localhost')
     #  邮件端口号
-    MAIL_PORT = int(os.environ.get('MAIL_PORT', '587'))
-    #  启用传输层安全
+    MAIL_PORT = int(os.environ.get('MAIL_PORT', '25'))
+    # 本地端口号
+    # MAIL_PORT = int(os.environ.get('MAIL_PORT', '25'))
+    #  启用传输层安全协议
     MAIL_USE_TLS = os.environ.get('MAIL_USE_TLS', 'True').lower() in ['true', 'on', '1']
-    MAIL_USERNAME = os.environ.get('MAIL_USERNAME')
-    MAIL_PASSWORD = os.environ.get('MAIL_PASSWORD')
+    # MAIL_USE_TLS = os.environ.get('MAIL_USE_TLS', 'False')
+    # 启用安全套接层协议
+    MAIL_USE_SSL = os.environ.get('MAIL_USE_SSL', 'False')
+    # 邮件账户的用户名
+    MAIL_USERNAME = os.environ.get('MAIL_USERNAME', 'None')
+    # 邮件账户的密码
+    MAIL_PASSWORD = os.environ.get('MAIL_PASSWORD', 'None')
     #  flask-mail主题前缀/发邮件人等配置
     FLASKY_MAIL_SUBJECT_PREFIX = '[Flasky]'
-    FLASKY_MAIL_SENDER = 'Flasky Admin<flasky@example.com>'
+    FLASKY_MAIL_SENDER = 'sishuiyibai@163.com'
     FLASK_ADMIN = os.environ.get('FLASKY_ADMIN')
     #  数据库配置
     SQLALCHEMY_COMMIT_ON_TEARDOWN = True
