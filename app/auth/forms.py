@@ -41,3 +41,19 @@ class ChangePasswordForm(FlaskForm):
     submit = SubmitField('Update Password')
 
 
+# 添加用户密码重置请求表单类
+class PasswordResetRequestForm(FlaskForm):
+    email = StringField('Email', validators=[DataRequired(), Length(1, 64), Email()])
+    submit = SubmitField('Reset Password')
+
+
+# 添加用户密码重置处理表单类
+class PasswordResetForm(FlaskForm):
+    password = PasswordField('New Password', validators=[DataRequired(),
+                                                         EqualTo('password2', message='Passwords must match')])
+    password2 = PasswordField('Confirm Password', validators=[DataRequired()])
+    submit = SubmitField('Reset Password')
+
+
+
+
