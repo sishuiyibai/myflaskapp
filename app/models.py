@@ -1,9 +1,23 @@
 from . import db
 from werkzeug.security import generate_password_hash, check_password_hash
-from flask_login import UserMixin
+from flask_login import UserMixin, AnonymousUserMixin
 from . import login_manager
 from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
 from flask import current_app
+
+
+# 定义用户角色权限类
+class Permission:
+    # 关注用户
+    FOLLOW = 0x01
+    # 在他人文章中发表评论
+    COMMENT = 0x02
+    # 写文章
+    WRITE_ARTICLES = 0x04
+    # 管理他人发表的评论
+    MODERATE_COMMENTS = 0x08
+    # 管理员权限
+    ADMINISTER = 0x80
 
 
 #  定义数据库模型
@@ -11,11 +25,41 @@ class Role(db.Model):
     __tablename__ = 'roles'
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(64), unique=True)
+    default = db.Column(db.Boolean, default=False, index=True)
+    permissions = db.Column(db.Integer)
     #  向User模型添加一个Role属性 ，该属性获取的是Role模型对象，可通过该属性访问Role模型
     users = db.relationship('User', backref='role', lazy='dynamic')
 
+    # 在数据库中创建角色,并赋予相应的权限
+    @staticmethod
+    def insert_roles():
+        roles = {
+            'User': (Permission.FOLLOW |
+                     Permission.COMMENT |
+                     Permission.WRITE_ARTICLES, True),
+            'Moderator': (Permission.FOLLOW |
+                          Permission.COMMENT |
+                          Permission.WRITE_ARTICLES |
+                          Permission.MODERATE_COMMENTS, False),
+            'Administrator':(0xff, False)
+        }
+
+        for r in roles:
+            # r为用户角色名，roles字典的健值
+            role = Role.query.filter_by(name=r).first()
+            # 用户角色不存在
+            if role is None:
+                # 创建该用户，默认为单一角色
+                role = Role(name=r)
+            # 为该角色赋予相应的角色权限
+            role.permissions = roles[r][0]
+            # 是否多用户标识
+            role.default = roles[r][1]
+            db.session.add(role)
+        db.session.commit()
+
     def __repr__(self):
-        return '<Role %r>' % self.__name__
+        return '<Role %r>' % self.name
 
 
 class User(UserMixin, db.Model):
@@ -26,6 +70,23 @@ class User(UserMixin, db.Model):
     password_hash = db.Column(db.String(128))
     role_id = db.Column(db.Integer, db.ForeignKey('roles.id'))
     confirmed = db.Column(db.Boolean, default=False)
+
+    # 调用基类的构造函数，定义默认的用户角色
+    def __init__(self, **kwargs):
+        super(User, self).__init__(**kwargs)
+        if self.role is None:
+            if self.email == current_app.config['FLASK_ADMIN']:
+                self.role = Role.query.filter_by(permissions=0xff).first()
+            if self.role is None:
+                self.role = Role.query.filter_by(default=True).first()
+
+    # 验证用户是否具有指定权限
+    def can(self, permissions):
+        return self.role is not None and (self.role.permissions & permissions) == permissions
+
+    # 判断是否为管理员角色
+    def is_administrator(self):
+        return self.can(Permission.ADMINISTER)
 
     @property
     def password(self):
@@ -105,6 +166,18 @@ class User(UserMixin, db.Model):
 
     def __repr__(self):
         return '<User %r>' % self.username
+
+
+# 创建匿名用户类
+class AnonymousUser(AnonymousUserMixin):
+    def can(self, permission):
+        return False
+
+    def is_administrator(self):
+        return False
+
+
+login_manager.anonymous_user = AnonymousUser
 
 
 @login_manager.user_loader
