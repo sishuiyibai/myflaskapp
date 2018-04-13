@@ -1,7 +1,7 @@
 import unittest
 import time
 from app import create_app, db
-from app.models import User
+from app.models import User, Role, Permission, AnonymousUser
 
 
 class UserModelTestCase(unittest.TestCase):
@@ -50,5 +50,20 @@ class UserModelTestCase(unittest.TestCase):
         time.sleep(2)
         # 令牌验证
         self.assertTrue(u.confirm(token))
+
+    # 角色和权限测试
+    def test_roles_and_Permissions(self):
+        Role.insert_roles()
+        u = User(email='john@example.com', password='cat')
+        self.assertTrue(u.can(Permission.WRITE_ARTICLES))
+        self.assertFalse(u.can(Permission.MODERATE_COMMENTS))
+
+    # 匿名用户权限测试
+    def test_anonymous_user(self):
+        u = AnonymousUser()
+        self.assertFalse(u.can(Permission.FOLLOW))
+
+
+
 
 
