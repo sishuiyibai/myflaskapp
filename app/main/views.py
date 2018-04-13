@@ -1,5 +1,6 @@
-from flask import render_template
+from flask import render_template, abort
 from . import main
+from ..models import User
 
 
 # index.html视图处理函数
@@ -9,6 +10,9 @@ def index():
 
 
 # user.html视图处理函数
-@main.route('/user/<name>')
-def user(name):
-    return render_template('user.html', name=name)
+@main.route('/user/<username>')
+def user(username):
+    user = User.query.filter_by(username=username).first()
+    if user is None:
+        abort(404)
+    return render_template('user.html', user=user)
