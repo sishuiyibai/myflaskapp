@@ -25,9 +25,9 @@ class Config:
     # 邮件账户的密码
     MAIL_PASSWORD = os.environ.get('MAIL_PASSWORD', 'None')
     #  flask-mail主题前缀/发邮件人等配置
-    FLASK_MAIL_SUBJECT_PREFIX = '[Flasky]'
+    FLASK_MAIL_SUBJECT_PREFIX = '[Flask]'
     FLASK_MAIL_SENDER = 'sishuiyibai@163.com'
-    FLASK_ADMIN = os.environ.get('FLASKY_ADMIN')
+    FLASK_ADMIN = os.environ.get('FLASK_ADMIN')
     #  数据库配置
     # flask-sqlalchemy 2.0 版本以上被移除
     #SQLALCHEMY_COMMIT_ON_TEARDOWN = True
