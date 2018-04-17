@@ -1,16 +1,24 @@
 from flask import render_template, abort, flash, redirect, url_for
 from app import db
 from . import main
-from .forms import EditProfileForm, EditProfileAdminForm
-from ..models import User, Role
+from .forms import EditProfileForm, EditProfileAdminForm, PostForm
+from ..models import User, Role, Post, Permission
 from flask_login import login_required, current_user
 from ..decorators import admin_required
 
 
 # index.html视图处理函数
-@main.route('/')
+@main.route('/', methods=['GET', 'POST'])
 def index():
-    return render_template('index.html')
+    form = PostForm()
+    # 如果用户点击了提交按钮
+    if current_user.can(Permission.WRITE_ARTICLES) and form.validate_on_submit():
+        post = Post(body=form.body.data, author=current_user._get_current_object())
+        db.session.add(post)
+        db.session.commit()
+        return redirect(url_for('.index'))
+    posts = Post.query.order_by(Post.timestamp.desc()).all()
+    return render_template('index.html', form=form, posts=posts)
 
 
 # user.html视图处理函数
