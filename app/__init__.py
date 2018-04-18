@@ -5,6 +5,7 @@ from flask_moment import Moment
 from flask_sqlalchemy import SQLAlchemy
 from config import config
 from flask_login import LoginManager
+from flask_pagedown import PageDown
 
 
 #  bootstrap扩展框架
@@ -24,6 +25,9 @@ login_manager.session_protection = 'strong'
 # 设置登陆视图，用于未授权操作的跳转：
 login_manager.login_view = 'auth.login'
 
+# 初始化Flask-PageDown
+pagedown = PageDown()
+
 
 # 工厂函数
 def create_app(config_name):
@@ -36,6 +40,7 @@ def create_app(config_name):
     moment.init_app(app)
     db.init_app(app)
     login_manager.init_app(app)
+    pagedown.init_app(app)
 
     # 注册main蓝本,main蓝本在./main文件夹下的__init__py文件中创建
     from .main import main as main_blueprint
