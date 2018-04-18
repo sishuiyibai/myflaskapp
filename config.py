@@ -32,6 +32,8 @@ class Config:
     # flask-sqlalchemy 2.0 版本以上被移除
     #SQLALCHEMY_COMMIT_ON_TEARDOWN = True
     SQLALCHEMY_TRACK_MODIFICATIONS = False
+    # 分页显示设置
+    FLASK_POSTS_PER_PAGE = 5
 
     @staticmethod
     def init_app(app):
