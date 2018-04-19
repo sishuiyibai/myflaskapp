@@ -90,11 +90,29 @@ def edit_profile_admin(id):
 
 
 # 博客文章的固定链接视图处理函数
-@main.route('/post/<int:id>')
+@main.route('/post/<int:id>', methods=['GET', 'POST'])
 def post(id):
     post = Post.query.get_or_404(id)
     # 传入视图渲染页面时posts必须以列表的形式传入，因为内部_post.html需要传入列表形式的posts
     return render_template('post.html', posts=[post])
+
+
+# 博客文章的链接视图处理函数
+@main.route('/edit/<int:id>', methods=['GET', 'POST'])
+@login_required
+def edit(id):
+    post = Post.query.get_or_404(id)
+    if current_user != post.author and not current_user.can(Permission.ADMINISTER):
+        abort(403)
+    form = PostForm()
+    if form.validate_on_submit():
+        post.body = form.body.data
+        db.session.add(post)
+        db.session.commit()
+        flash('The post has been updated.')
+        return redirect(url_for('.post', id=post.id))
+    form.body.data = post.body
+    return render_template('edit_post.html', form=form)
 
 
 
