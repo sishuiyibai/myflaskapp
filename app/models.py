@@ -6,6 +6,8 @@ from flask_login import UserMixin, AnonymousUserMixin
 from . import login_manager
 from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
 from flask import current_app, request
+from markdown import markdown
+import bleach
 
 
 # 定义用户角色权限类
@@ -237,6 +239,7 @@ class Post(db.Model):
     body = db.Column(db.Text)
     timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow)
     author_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    body_html = db.Column(db.Text)
 
     # 博客文章虚拟数据自动化生成函数
     @staticmethod
@@ -253,6 +256,19 @@ class Post(db.Model):
                      author=u)
             db.session.add(p)
             db.session.commit()
+
+    @staticmethod
+    def on_changed_body(target, value, oldvalue, initiator):
+        allowed_tags = ['a', 'abbr', 'acronym', 'b', 'blockquote', 'code',
+                        'em', 'i', 'li', 'ol', 'pre', 'strong', 'ul',
+                        'h1', 'h2', 'h3', 'p']
+        target.body_html = bleach.linkify(bleach.clean(markdown(value, output_format='html'),
+                                                       tags=allowed_tags, strip=True))
+
+
+# 监听博客文章body字段有无改变，当用户提交表单时，body字段又变化，则将输入的MarkDown文本调用on_changed_body（）进行处理，转换为html标签
+# 格式的文本，保存在Post.body_html字段中，随后被相应的视图页面进行渲染
+db.event.listen(Post.body, 'set', Post.on_changed_body)
 
 
 @login_manager.user_loader
