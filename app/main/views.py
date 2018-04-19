@@ -89,6 +89,15 @@ def edit_profile_admin(id):
     return render_template('edit_profile.html', form=form, user=user)
 
 
+# 博客文章的固定链接视图处理函数
+@main.route('/post/<int:id>')
+def post(id):
+    post = Post.query.get_or_404(id)
+    # 传入视图渲染页面时posts必须以列表的形式传入，因为内部_post.html需要传入列表形式的posts
+    return render_template('post.html', posts=[post])
+
+
+
 
 
 
