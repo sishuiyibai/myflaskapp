@@ -35,6 +35,7 @@ class Config:
     # 分页显示设置
     FLASK_POSTS_PER_PAGE = 5
     FLASK_FOLLOWERS_PER_PAGE = 5
+    FLASK_COMMENTS_PER_PAGE = 5
 
     @staticmethod
     def init_app(app):
