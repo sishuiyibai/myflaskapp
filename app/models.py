@@ -96,11 +96,11 @@ class User(UserMixin, db.Model):
                                lazy='dynamic',
                                cascade='all, delete-orphan')
     # 关注者
-    follower = db.relationship('Follow',
-                               foreign_keys=[Follow.followed_id],
-                               backref=db.backref('followed', lazy='joined'),
-                               lazy='dynamic',
-                               cascade='all, delete-orphan')
+    followers = db.relationship('Follow',
+                                foreign_keys=[Follow.followed_id],
+                                backref=db.backref('followed', lazy='joined'),
+                                lazy='dynamic',
+                                cascade='all, delete-orphan')
 
     # 调用基类的构造函数，定义默认的用户角色
     def __init__(self, **kwargs):
@@ -238,17 +238,19 @@ class User(UserMixin, db.Model):
     # 添加被关注者
     def follow(self, user):
         if not self.is_following(user):
-            f = Follow(followed=user)
-            self.followed.append(f)
+            f = Follow(follower=self, followed=user)
+            db.session.add(f)
+            db.session.commit()
 
     # 取消关注
     def unfollow(self, user):
         f = self.followed.filter_by(followed_id=user.id).first()
         if f:
-            self.followed.remove(f)
+            db.session.delete(f)
+            db.session.commit()
 
     # 关注者是否关注被关注者
-    def is_following(self,user):
+    def is_following(self, user):
         if user.id is None:
             return False
         return self.followed.filter_by(
@@ -258,8 +260,8 @@ class User(UserMixin, db.Model):
     def is_following_by(self, user):
         if user.id is None:
             return False
-        return self.follower.filter_by(
-            follower_id=user.id).first()is not None
+        return self.followers.filter_by(
+            follower_id=user.id).first() is not None
 
     def __repr__(self):
         return '<User %r>' % self.username
