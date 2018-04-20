@@ -1,4 +1,4 @@
-from flask import render_template, abort, flash, redirect, url_for, request, current_app
+from flask import render_template, abort, flash, redirect, url_for, request, current_app, make_response
 from app import db
 from . import main
 from .forms import EditProfileForm, EditProfileAdminForm, PostForm
@@ -19,10 +19,19 @@ def index():
         return redirect(url_for('.index'))
     # 分页显示博客文章列表，默认请求第1页
     page = request.args.get('page', 1, type=int)
-    pagination = Post.query.order_by(Post.timestamp.desc()).paginate(
+    # 是否只显示所关注的用户文章
+    show_followed = False
+    if current_user.is_authenticated:
+        # 从cookies中获取
+        show_followed = bool(request.cookies.get('show_followed', ''))
+    if show_followed:
+        query = current_user.followed_posts
+    else:
+        query = Post.query
+    pagination = query.order_by(Post.timestamp.desc()).paginate(
         page, per_page=current_app.config['FLASK_POSTS_PER_PAGE'], error_out=False)
     posts = pagination.items
-    return render_template('index.html', form=form, posts=posts, pagination=pagination)
+    return render_template('index.html', form=form, posts=posts, show_followed=show_followed, pagination=pagination)
 
 
 # user.html视图处理函数
@@ -185,6 +194,24 @@ def followed_by(username):
     return render_template('followers.html', user=user, title="Followed by",
                            endpoint='.followed_by', pagination=pagination,
                            follows=follows)
+
+
+# 查询所有文章路由和视图函数
+@main.route('/all',methods=['GET', 'POST'])
+@login_required
+def show_all():
+    resp = make_response(redirect(url_for('.index')))
+    resp.set_cookie('show_followed', '', max_age=30*24*60*60)
+    return resp
+
+
+# 查询关注用户文章路由和视图函数
+@main.route('/followed', methods=['GET', 'POST'])
+@login_required
+def show_followed():
+    resp = make_response(redirect(url_for('.index')))
+    resp.set_cookie('show_followed', '1', max_age=30*24*60*60)
+    return resp
 
 
 
