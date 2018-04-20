@@ -57,6 +57,12 @@ class PostForm(FlaskForm):
     submit = SubmitField('Submit')
 
 
+# 博客文章评论表单类
+class CommentForm(FlaskForm):
+    body = StringField('', validators=[DataRequired()])
+    submit = SubmitField('Submit')
+
+
 
 
 
