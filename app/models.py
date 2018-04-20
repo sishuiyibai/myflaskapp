@@ -88,6 +88,7 @@ class User(UserMixin, db.Model):
     confirmed = db.Column(db.Boolean, default=False)
     # 用户邮箱号hash值存储字段
     avatar_hash = db.Column(db.String(32))
+    # 用户与博客文章一对多关系
     posts = db.relationship('Post', backref='author', lazy='dynamic')
     # 被关注者
     followed = db.relationship('Follow',
@@ -101,6 +102,8 @@ class User(UserMixin, db.Model):
                                 backref=db.backref('followed', lazy='joined'),
                                 lazy='dynamic',
                                 cascade='all, delete-orphan')
+    # 用户与评论一对多关系
+    comments = db.relationship('Comment', backref='author', lazy='dynamic')
 
     # 调用基类的构造函数，定义默认的用户角色
     def __init__(self, **kwargs):
@@ -304,6 +307,8 @@ class Post(db.Model):
     timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow)
     author_id = db.Column(db.Integer, db.ForeignKey('users.id'))
     body_html = db.Column(db.Text)
+    # 博客文章与用户评论一对多的关系
+    comments = db.relationship('Comment', backref='post', lazy='dynamic')
 
     # 博客文章虚拟数据自动化生成函数
     @staticmethod
@@ -333,6 +338,29 @@ class Post(db.Model):
 # 监听博客文章body字段有无改变，当用户提交表单时，body字段又变化，则将输入的MarkDown文本调用on_changed_body（）进行处理，转换为html标签
 # 格式的文本，保存在Post.body_html字段中，随后被相应的视图页面进行渲染
 db.event.listen(Post.body, 'set', Post.on_changed_body)
+
+
+# 创建用户评论数据表模型类
+class Comment(db.Model):
+    __tablename__ = 'comments'
+    id = db.Column(db.Integer, primary_key=True)
+    body = db.Column(db.Text)
+    body_html = db.Column(db.Text)
+    timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow)
+    disabled = db.Column(db.Boolean)
+    author_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    post_id = db.Column(db.Integer, db.ForeignKey('posts.id'))
+
+    @staticmethod
+    def on_changed_body(target, value, oldvalue, initiator):
+        allowed_tags = ['a', 'abbr', 'b', 'code', 'em', 'i', 'strong']
+        target.body_html = bleach.linkify(bleach.clean(markdown(value, output_format='html'),
+                                                       tags=allowed_tags, strip=True))
+
+
+# 监听博客文章评论body字段有无改变，当用户提交表单时，body字段又变化，则将输入的MarkDown文本调用on_changed_body（）进行处理，转换为html标签
+# 格式的文本，保存在Comment.body_html字段中，随后被相应的视图页面进行渲染
+db.event.listen(Comment.body, 'set', Comment.on_changed_body)
 
 
 @login_manager.user_loader
