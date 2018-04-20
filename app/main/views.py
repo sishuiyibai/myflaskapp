@@ -4,7 +4,7 @@ from . import main
 from .forms import EditProfileForm, EditProfileAdminForm, PostForm
 from ..models import User, Role, Post, Permission
 from flask_login import login_required, current_user
-from ..decorators import admin_required
+from ..decorators import admin_required, permission_required
 
 
 # index.html视图处理函数
@@ -113,6 +113,80 @@ def edit(id):
         return redirect(url_for('.post', id=post.id))
     form.body.data = post.body
     return render_template('edit_post.html', form=form)
+
+
+# 关注用户路由和视图处理函数
+@main.route('/follow/<username>', methods=['GET', 'POST'])
+@login_required
+@permission_required(Permission.FOLLOW)
+def follow(username):
+    user = User.query.filter_by(username=username).first()
+    if user is None:
+        flash('Invalid user.')
+        return redirect(url_for('.index'))
+    if current_user.is_following(user):
+        flash('You are already following this user.')
+        return redirect(url_for('.user', username=username))
+    # 添加关注
+    current_user.follow(user)
+    flash('You are now following %s.' % username)
+    return redirect(url_for('.user', username=username))
+
+
+# 取消关注用户路由和视图处理函数
+@main.route('/unfollow/<username>', methods=['GET', 'POST'])
+@login_required
+@permission_required(Permission.FOLLOW)
+def unfollow(username):
+    user = User.query.filter_by(username=username).first()
+    if user is None:
+        flash('Invalid user.')
+        return redirect(url_for('.index'))
+    if not current_user.is_following(user):
+        flash('You are not following this user.')
+        return redirect(url_for('.user', username=username))
+    # 取消关注
+    current_user.unfollow(user)
+    flash('You are not following %s anymore.' %username)
+    return redirect(url_for('.user', username=username))
+
+
+# “关注者”路由和视图函数
+@main.route('/followers/<username>', methods=['GET', 'POST'])
+def followers(username):
+    user = User.query.filter_by(username=username).first()
+    if user is None:
+        flash('Invalid user.')
+        return redirect(url_for('.index'))
+    page = request.args.get('page', 1, type=int)
+    pagination = user.followers.paginate(
+        page, per_page=current_app.config['FLASK_FOLLOWERS_PER_PAGE'],
+        error_out=False)
+    follows = [{'user': item.follower, 'timestamp': item.timestamp}
+               for item in pagination.items]
+    return render_template('followers.html', user=user, title="Followers of",
+                           endpoint='.followers', pagination=pagination,
+                           follows=follows)
+
+
+# “被关注者”路由和视图函数
+@main.route('/followed-by/<username>', methods=['GET', 'POST'])
+def followed_by(username):
+    user = User.query.filter_by(username=username).first()
+    if user is None:
+        flash('Invalid user.')
+        return redirect(url_for('.index'))
+    page = request.args.get('page', 1, type=int)
+    pagination = user.followed.paginate(
+        page, per_page=current_app.config['FLASK_FOLLOWERS_PER_PAGE'],
+        error_out=False)
+    follows = [{'user': item.followed, 'timestamp': item.timestamp}
+               for item in pagination.items]
+    return render_template('followers.html', user=user, title="Followed by",
+                           endpoint='.followed_by', pagination=pagination,
+                           follows=follows)
+
+
 
 
 
