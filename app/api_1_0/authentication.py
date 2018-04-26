@@ -1,4 +1,4 @@
-from flask.ext.httpauth import HTTPBasicAuth
+from flask_httpauth import HTTPBasicAuth
 from ..models import AnonymousUser, User
 from flask import g, jsonify
 from .errors import unauthorized, forbidden
