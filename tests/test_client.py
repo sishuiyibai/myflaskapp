@@ -28,15 +28,15 @@ class FlaskClientTestCase(unittest.TestCase):
     # 用户注册和登陆测试
     def test_register_and_login(self):
         # 注册新账户
-        response = self.client.post(url_for('auth.register'), data={'email':'john@example.com',
-                                                                    'username':'john',
-                                                                    'password':'cat',
-                                                                    'password2':'cat'})
+        response = self.client.post(url_for('auth.register'), data={'email': 'john@example.com',
+                                                                    'username': 'john',
+                                                                    'password': 'cat',
+                                                                    'password2': 'cat'})
         self.assertTrue(response.status_code == 302)
 
         # 使用新注册的账户登录
         response = self.client.post(url_for('auth.login'), data={'email': 'john@example.com',
-                                                             'password':'cat'}, follow_redirects=True)
+                                                                 'password': 'cat'}, follow_redirects=True)
         data = response.get_data(as_text=True)
         self.assertTrue(re.search('Hello, \s+john!', data))
         self.assertTrue('You have not confirmed your account yet' in data)
