@@ -36,7 +36,7 @@ def make_shell_context():
 
 
 # 使用Command实例的@option修饰符
-@app.cli.command()
+@app.cli.command
 @click.option('--coverage/--no-coverage', help='Run tests under coder coverage.', default=False)
 def test(coverage):
     """Run the unit tests."""
@@ -61,8 +61,25 @@ def test(coverage):
         COV.erase()
 
 
+# 添加部署命令
+@app.cli.command
+def deploy():
+    """Run deployment tasks."""
+    from flask.ext.migrate import upgrade
+    from app.models import Role, User
+
+    # 把数据库迁移到最新修订版本
+    upgrade()
+
+    # 创建用户角色
+    Role.insert_roles()
+
+    # 让所有用户都关注此用户
+    User.add_self_follows()
+
+
 # 在请求分析器的监视下运行程序
-@app.cli.command()
+@app.cli.command
 @click.option('--length', default=25,
               help='Number of functions to include in the profiler report.')
 @click.option('--profile-dir', default=None,
