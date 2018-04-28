@@ -13,6 +13,7 @@ Flask-SQLAlchemy==2.3.2
 Flask-WTF==0.14.2
 Flask-PageDown==0.2.2
 Flask-HTTPAuth==3.2.3
+selenium==3.11.0
 itsdangerous==0.24
 Jinja2==2.10
 Mako==1.0.7
