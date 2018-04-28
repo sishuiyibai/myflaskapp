@@ -31,6 +31,8 @@ class Config:
     # flask-sqlalchemy 2.0 版本以上被移除
     # SQLALCHEMY_COMMIT_ON_TEARDOWN = True
     SQLALCHEMY_TRACK_MODIFICATIONS = False
+    SQLALCHEMY_RECORD_QUERIES = True
+    FLASK_SHOW_DB_QUERY_TIME = 0.5
     # 分页显示设置
     FLASK_POSTS_PER_PAGE = 5
     FLASK_FOLLOWERS_PER_PAGE = 5
