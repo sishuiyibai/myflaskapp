@@ -5,6 +5,7 @@ from .forms import EditProfileForm, EditProfileAdminForm, PostForm, CommentForm
 from ..models import User, Role, Post, Permission, Comment
 from flask_login import login_required, current_user
 from ..decorators import admin_required, permission_required
+from flask_sqlalchemy import get_debug_queries
 
 
 # index.html视图处理函数
@@ -271,6 +272,16 @@ def moderate_disable(id):
     return redirect(url_for('.moderate',
                             page=request.args.get('page', 1, type=int)))
 
+
+# 报告缓慢的数据库查询
+@main.after_app_request
+def after_request(response):
+    for query in get_debug_queries():
+        if query.duration >= current_app.config['FLASK_SHOW_DB_QUERY_TIME']:
+            current_app.logger.warning(
+                'Slow query:%s\nParameters: %s\nDuration: %fs\nContext: %s\n' %
+                (query.statement, query.parameters, query.duration, query.context))
+            return response
 
 
 
